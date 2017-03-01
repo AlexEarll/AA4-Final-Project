@@ -5,6 +5,8 @@ library(dplyr)
 library(plotly)
 library(shiny) 
 
+# link to api: https://pokeapi.co/docsv2/
+
 ###Setup###
 # Read in files from the pokemon api, preparing them for use in the rest of the project
 
