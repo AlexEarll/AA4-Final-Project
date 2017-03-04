@@ -37,5 +37,3 @@ for (name in pokemon.names.vect) {
 }
 images.links.df <- as.data.frame(images.links.vect)
 
-left_join(pokemon.names.df, images.links.df)
-
