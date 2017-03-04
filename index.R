@@ -21,6 +21,21 @@ pokemon2 <- flatten(body.2$pokemon_species)
 pokemon1.vector <- as.vector(unlist(pokemon1$name))
 pokemon2.vector <- as.vector(unlist(pokemon2$name))
 
-pokemon.names <- c(pokemon1.vector, pokemon2.vector)
-pokemon.names <- as.data.frame(pokemon.names)
+pokemon.names.vect <- c(pokemon1.vector, pokemon2.vector)
+pokemon.names.df <- as.data.frame(pokemon.names)
+
+
+images.links.vect <- vector()
+for (name in pokemon.names.vect) {
+  images <- "api/v2/pokemon/"
+  uri.images <- paste0(base.uri, images, name)
+  response <- GET(uri.images)
+  body <- fromJSON(content(response, "text", encoding = "UTF-8"))
+  images.front <- body$sprites$front_default
+    
+  images.links.vect <- c(images.links.vect, images.front)
+}
+images.links.df <- as.data.frame(images.links.vect)
+
+left_join(pokemon.names.df, images.links.df)
 
