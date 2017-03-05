@@ -42,13 +42,8 @@ print(colnames(poke.moves))
 
 poke.moves <- select(poke.moves, move.name)
 
-# Using dplyr order the moves by rank. Higher ranking moves should be on the top of the dataframe. 
 poke.moves <- arrange(poke.moves, -move.rank)
 
-# Bonus 1
-# Download a sprite of your pokemon. Be sure to download it to your png folder. Name the downloaded file using
-# your pokemon's name. Be sure to check that there is a link to the sprite you chose.
-poke.img <- poke.data$sprites
 
 
 
