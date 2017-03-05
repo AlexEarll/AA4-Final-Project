@@ -1,15 +1,13 @@
-
 library(shiny)
 library(ggplot2)
 library(dplyr)
-library(plotly)
-library(shiny) 
-
-# link to api: https://pokeapi.co/docsv2/
 
 ###Setup###
-# Read in files from the pokemon api, preparing them for use in the rest of the project
+pokemon.file <- read.csv("Pokemon.csv", stringsAsFactors=FALSE)
 
+pokemon.data <- pokemon.file %>% 
+  select(pokemon, species_id, base_experience, type_1, type_2, attack, defense, hp, special_attack, special_defense, ability_1, ability_2, ability_hidden, url_image, generation_id) %>% 
+  filter(generation_id == 1)
 
 ###part 1###
 #create shiny interface for selecting pokemon
