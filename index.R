@@ -27,13 +27,12 @@ pokemon.names.df <- as.data.frame(pokemon.names)
 
 images.links.vect <- vector()
 for (name in pokemon.names.vect) {
-  images <- "api/v2/pokemon/"
-  uri.images <- paste0(base.uri, images, name)
-  response <- GET(uri.images)
-  body <- fromJSON(content(response, "text", encoding = "UTF-8"))
-  images.front <- body$sprites$front_default
-    
-  images.links.vect <- c(images.links.vect, images.front)
+  images <- "api/v2/ability/"
+  uri.info <- paste0(base.uri, images, name)
+  print(uri.info)
+  #response <- GET(uri.info)
+  #body <- fromJSON(content(response, "text", encoding = "UTF-8"))
+  
 }
 images.links.df <- as.data.frame(images.links.vect)
 
