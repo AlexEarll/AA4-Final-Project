@@ -26,11 +26,12 @@ library(jsonlite)
 ###Setup###
 base.url <- "http://pokeapi.co/api/v2/"
 
-first.gen <- data.frame(nrow=151)
-
-nums <- c(1:151)
-
+# Get data for all the pokemon in gen 1
 if(!file.exists("data/Pokemon.csv")) {
+  
+  first.gen <- data.frame()
+  nums <- c(1:151)
+  
   for(x in nums) {
     pokemon.url = paste0(base.url, "pokemon/", x)
     print(pokemon.url)
@@ -52,30 +53,71 @@ if(!file.exists("data/Pokemon.csv")) {
     first.gen[x, 10] <- temp.data$stats$base_stat[1]
   }
   write.csv(first.gen, file = "data/Pokemon.csv")
+} else {
+  first.gen <- read.csv("data/Pokemon.csv")
 }
+
+colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
 
 View(first.gen)
 
-print(temp.data)
+View(damage.table)
 
-print(names(poke.data))
 
-print(is.data.frame(poke.data))
+if(!file.exists("data/damage_table.csv")) {
+  
+  nums <- c(1:18)
+  
+  type.names <- c("normal", "fighting", "flying", "poison", "ground", "rock", "bug", 
+                  "ghost", "steel", "fire", "water", "grass", "electric", "psychic", 
+                  "ice", "dragon", "dark", "fairy")
+  
+  damage.table <- data.frame()
+  
+  for(i in nums) {
+    for(j in nums) {
+      damage.table[i,j] <- 1
+    }
+  }
+  
+  for(n in nums) {
+    print(paste("on", n, "type"))
+    pokemon.url = paste0(base.url, "type/", n)
+    print(pokemon.url)
+    
+    response <- GET(pokemon.url)
+    body <- content(response, "text", encoding = "UTF-8")
+    
+    type.data <- fromJSON(body, flatten = TRUE)
+    
+    print("checking multipliers")
+    if(is.data.frame(type.data$damage_relations$half_damage_from)) {
+      print("chceking half multiplyers")
+      type.name <- type.data$damage_relations$half_damage_from$name
+      
+      damage.table[match(type.name, type.names), n] <- .5
+    }
+    if(is.data.frame(type.data$damage_relations$no_damage_from)) {
+      print("chceking zero multiplyers")
+      type.name <- type.data$damage_relations$no_damage_from$name
+      
+      damage.table[match(type.name, type.names), n] <- 0
+    }
+    if(is.data.frame(type.data$damage_relations$double_damage_from)) {
+      print("chceking half multiplyers")
+      type.name <- type.data$damage_relations$double_damage_from$name
 
-print(is.data.frame(poke.data$moves))
+      damage.table[match(type.name, type.names), n] <- 2
+    }
+  }
+  colnames(damage.table) <- type.names
+  rownames(damage.table) <- type.names
+  write.csv(damage.table, file = "data/damage_table.csv")
+} else {
+    damage.table <- read.csv("data/damage_table.csv")
+}
 
-poke.moves <- head(poke.data$moves)
-View(poke.moves)
-
-poke.moves <- flatten(poke.moves)
-
-print(colnames(poke.moves))
-
-poke.moves <- select(poke.moves, move.name)
-
-poke.moves <- arrange(poke.moves, -move.rank)
-
-View(poke.moves)
+View(damage.table)
 
 LoadImages <- function(name1, name2) {
   image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", name1, ".png"))
