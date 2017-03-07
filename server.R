@@ -22,18 +22,24 @@ server <- function(input, output, session) {
                 selected = NULL)
   })
   
-  output$move1 <- renderUI({
-    radioButtons("first.move",
-                 label = "Second Pokeman's Move",
-                 c("Attack", "Defense")
-                 )
+  output$first.poke.stats <- renderText({
+    paste(paste0(input$first.poke, "'s"), "Statistics:",
+          "Species Id: \n",
+          "Type: \n",
+          "Abilities:", sep = "\n")
   })
   
-  output$move2 <- renderUI({
-    radioButtons("second.move",
-                 label = "Second Pokeman's Move",
-                 c("Attack", "Defense")
-                 )
+  output$second.poke.stats <- renderText({
+    paste(paste0(input$second.poke, "'s"), "Statistics:",
+          "Species Id: \n",
+          "Type: \n",
+          "Abilities:", sep = "\n")
   })
+  
+  output$table <- renderTable({
+    
+  })
+  
+  
   
 }
