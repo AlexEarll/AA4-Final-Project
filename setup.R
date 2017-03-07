@@ -52,22 +52,14 @@ getMoves <- function(get.name) {
     does.damage <- temp.data$meta$category$name
     if(does.damage == "damage" || does.damage == "damage+ailment") {
       row.index <- row.index + 1
-      print("adding value 1")
       moves[row.index, 1] <- temp.data$id
       print(temp.data$id)
-      print("adding value 2")
       moves[row.index, 2] <- temp.data$name
-      print("adding value 3")
       moves[row.index, 3] <- temp.data$power
-      print(temp.data$power)
       print("adding value 4")
-      moves[row.index, 4] <- temp.data$accuracy
       print("adding value 5")
-      moves[row.index, 5] <- temp.data$meta$crit_rate
       print("adding value 6")
-      moves[row.index, 6] <- temp.data$damage_class$name
       print("adding value 7")
-      moves[row.index, 7] <- temp.data$type$name
       print("adding value 8")
     }
     
