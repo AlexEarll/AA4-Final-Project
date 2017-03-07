@@ -61,7 +61,14 @@ for (index in nums) {
   
   temp.data <- fromJSON(body, flatten = TRUE)
   
-  moves[index, 1] <- temp.data$meta$
+  moves[index, 1] <- temp.data$id
+  moves[index, 2] <- temp.data$meta$category$name
+  moves[index, 3] <- temp.data$power
+  moves[index, 4] <- temp.data$accuracy
+  moves[index, 5] <- temp.data$meta$crit_rate
+  moves[index, 6] <- temp.data$damage_class
+  moves[index, 7] <- temp.data$type
+  moves[index, 7] <- temp.data$meta$
   
   print((move.data))
   
