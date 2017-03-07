@@ -12,10 +12,11 @@ pokemon.data <- pokemon.file %>%
   filter(generation_id == 1)
 View(pokemon.data)
 
+move.id <- 1
 
 base.url <- "http://pokeapi.co/api/v2/"
 
-pokemon <- "butterfree"
+pokemon <- "charmander"
 
 pokemon.url <- paste(base.url,"pokemon/", pokemon, "/", sep = "")
 
@@ -34,27 +35,43 @@ print(is.data.frame(poke.data))
 print(is.data.frame(poke.data$moves))
 
 poke.moves <- head(poke.data$moves)
-View(poke.moves)
 
 poke.moves <- flatten(poke.moves)
-
+View(poke.moves)
 print(colnames(poke.moves))
+
+num.rows <- nrow(poke.moves)
+nums <- c(1:num.rows)
+
+moves <- data.frame()
+
+for (index in nums) {
+
+  print(nums)  
+  
+  url <- toString(poke.moves[index, 2])
+  
+  print(url)
+  
+  response <- GET(url)
+  
+  print(names(response))
+  
+  body <- content(response, "text")
+  
+  temp.data <- fromJSON(body, flatten = TRUE)
+  
+  moves[index, 1] <- temp.data$meta$
+  
+  print((move.data))
+  
+  print(is.data.frame(move.data))
+  
+}
+
+
+
 
 poke.moves <- select(poke.moves, move.name)
 
 poke.moves <- arrange(poke.moves, -move.rank)
-
-
-
-
-###part 1###
-#create shiny interface for selecting pokemon
-
-###part 2### 
-#Create backend (sever) for math calculations and such to feed into the UI
-
-###part 3###
-#Create battle sequence 
-
-###part 4### 
-#Create output and summary of the battle
