@@ -29,7 +29,8 @@ base.url <- "http://pokeapi.co/api/v2/"
 
 first.gen <- LoadPokemon()
 damage.table <- LoadDamageTable()
-View(damage.table)
+
+View(first.gen)
 poke.1.name <- "charizard"
 poke.1.moves <- head(getMoves(poke.1.name), 4)
 poke.1.stats <- filter(first.gen, name == poke.1.name)
@@ -38,8 +39,8 @@ poke.1.hp <- poke.1.stats[1, 7] * (poke.1.level * 2.5)
 poke.1.attack <- poke.1.stats[1, 5]
 poke.1.defense <- poke.1.stats[1, 6]
 poke.1.speed <- poke.1.stats[1, 10]
-poke.1.type.1 <- poke.1.stats[1, 3]
-poke.1.type.2 <- poke.1.stats[1, 4]
+poke.1.type.1 <- as.character(poke.1.stats[1, 3])
+poke.1.type.2 <- as.character(poke.1.stats[1, 4])
 View(poke.1.stats)
 
 poke.2.name <- "mew"
@@ -50,18 +51,16 @@ poke.2.hp <- poke.2.stats[1, 7] * (poke.2.level * 2.5)
 poke.2.attack <- poke.2.stats[1, 5]
 poke.2.defense <- poke.2.stats[1,6]
 poke.2.speed <- poke.2.stats[1, 10]
-poke.2.type.1 <- poke.2.stats[1, 3]
-poke.2.type.2 <- poke.1.stats[1, 4]
-
-View(poke.2.moves)
+poke.2.type.1 <- as.character(poke.2.stats[1, 3])
+poke.2.type.2 <- as.character(poke.1.stats[1, 4])
 
 while(poke.2.hp > 0 && poke.1.hp > 0) {
   if(poke.1.speed > poke.2.speed) {
-    poke.2.hp <- Poke.Attack(poke.1.attack, poke.1.level, attack.num = 1, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2)
-    poke.1.hp <- Poke.Attack(poke.2.attack, poke.2.level, attack.num = 1, poke.2.moves, poke.1.defense, poke.1.hp, poke.1.type.1, poke.1.type.2)
+    poke.2.hp <- Poke.Attack(poke.1.name, poke.1.attack, poke.1.level, attack.num = 1, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2, damage.table)
+    poke.1.hp <- Poke.Attack(poke.2.name, poke.2.attack, poke.2.level, attack.num = 1, poke.2.moves, poke.1.defense, poke.1.hp, poke.1.type.1, poke.1.type.2, damage.table)
   } else {
-    poke.1.hp <- Poke.Attack(poke.1.attack, poke.1.level, attack.num = 1, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2)
-    poke.2.hp <- Poke.Attack(poke.2.attack, poke.2.level, attack.num = 1, poke.2.moves, poke.1.defense, poke.1.hp, poke.1.type.1, poke.1.type.2)
+    poke.1.hp <- Poke.Attack(poke.2.name, poke.1.attack, poke.1.level, attack.num = 1, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2, damage.table)
+    poke.2.hp <- Poke.Attack(poke.1.name, poke.2.level, attack.num = 1, poke.2.moves, poke.1.defense, poke.1.hp, poke.1.type.1, poke.1.type.2, damage.table)
   }
 }
 
@@ -70,7 +69,7 @@ View(damage.table)
 var <- filter_(damage.table, ~"flying"== rownames(damage.table)) %>% 
   select_("flying")
 
-Poke.Attack <- function(poke.1.attack, poke.1.level, attack.num, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2) {
+Poke.Attack <- function(poke.1.name, poke.1.attack, poke.1.level, attack.num, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2, damage.table) {
   if(sample(1:100,1) > poke.1.moves[attack.num, 4]) {
     return(0)
   }
@@ -78,18 +77,17 @@ Poke.Attack <- function(poke.1.attack, poke.1.level, attack.num, poke.1.moves, p
   if(sample(1:100, 1) > poke.1.moves[attack.num, 5]) {
     crit <- 2
   }
-  View(poke.1.moves)
-  
+
   a <- (((2 * poke.1.level) / 5)) * (poke.1.attack/poke.1.defense) * poke.1.moves[attack.num, 3]
+
+  print("working on first multiplyer")
+  
   # type adjustments & crit
-  print(poke.2.type.1)
-  type.1.mult <- filter_(damage.table, ~poke.2.type.1 == rownames(damage.table)) %>% 
+  type.1.mult <- damage.table %>% filter_(~poke.2.type.1 == rownames(damage.table)) %>% 
     select_(poke.2.type.1)
-    
+
   type.1.mult <- type.1.mult[1, 1]
   
-  print(paste("value of crit 1 is", type.1.mult))
-
   type.2.mult <- 1
   
   if(exists("poke.2.type.2")) {
@@ -100,11 +98,11 @@ Poke.Attack <- function(poke.1.attack, poke.1.level, attack.num, poke.1.moves, p
   
   c <- type.1.mult * type.2.mult * crit
 
-  damage <- round(((a/50) + 2 * c) * sample(85:100, 1) / 100, 0)
+  damage <- round(((a/50) + 2 * c) * (sample(85:100, 1) / 100), 0)
   
 
   print(paste(poke.1.name, "did", damage, "with", poke.1.moves[attack.num, 2]))
-  #return(poke.2.hp - damage)
+  return(poke.2.hp - damage)
 }
 
 # Get data for all the pokemon in gen 1
@@ -136,8 +134,11 @@ if(!file.exists("data/Pokemon.csv")) {
   }
   write.csv(first.gen, file = "data/Pokemon.csv")
 } else {
-  first.gen <- read.csv("data/Pokemon.csv")
-  first.gen <- first.gen %>% select(-id)
+  first.gen <- read.csv("data/Pokemon.csv", stringsAsFactors = FALSE)
+  colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
+  if(length(colnames(first.gen)) == 11) {
+    first.gen <- first.gen %>% select(-id)
+  }
 }
 
 colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
@@ -196,7 +197,7 @@ LoadDamageTable <- function() {
     rownames(damage.table) <- type.names
     write.csv(damage.table, file = "data/damage_table.csv")
   } else {
-      damage.table <- read.csv("data/damage_table.csv")
+      damage.table <- read.csv("data/damage_table.csv", stringsAsFactors = FALSE)
       damage.table <- damage.table %>% select(-X)
       row.names(damage.table) <- type.names
   }
