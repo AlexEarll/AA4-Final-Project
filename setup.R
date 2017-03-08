@@ -27,15 +27,88 @@ move.id <- 1
 ###Setup###
 base.url <- "http://pokeapi.co/api/v2/"
 
-LoadPokemon()
-LoadDamageTable()
+first.gen <- LoadPokemon()
+damage.table <- LoadDamageTable()
+View(damage.table)
+poke.1.name <- "charizard"
+poke.1.moves <- head(getMoves(poke.1.name), 4)
+poke.1.stats <- filter(first.gen, name == poke.1.name)
+poke.1.level <- 100
+poke.1.hp <- poke.1.stats[1, 7] * (poke.1.level * 2.5)
+poke.1.attack <- poke.1.stats[1, 5]
+poke.1.defense <- poke.1.stats[1, 6]
+poke.1.speed <- poke.1.stats[1, 10]
+poke.1.type.1 <- poke.1.stats[1, 3]
+poke.1.type.2 <- poke.1.stats[1, 4]
+View(poke.1.stats)
 
-pokemon.name <- "pikachu"
+poke.2.name <- "mew"
+poke.2.moves <- head(getMoves(poke.2.name), 4)
+poke.2.stats <- filter(first.gen, name == poke.2.name)
+poke.2.level <- 25
+poke.2.hp <- poke.2.stats[1, 7] * (poke.2.level * 2.5)
+poke.2.attack <- poke.2.stats[1, 5]
+poke.2.defense <- poke.2.stats[1,6]
+poke.2.speed <- poke.2.stats[1, 10]
+poke.2.type.1 <- poke.2.stats[1, 3]
+poke.2.type.2 <- poke.1.stats[1, 4]
 
-getMoves(pokemon.name)
+View(poke.2.moves)
 
-LoadPokemon <- function() {
+while(poke.2.hp > 0 && poke.1.hp > 0) {
+  if(poke.1.speed > poke.2.speed) {
+    poke.2.hp <- Poke.Attack(poke.1.attack, poke.1.level, attack.num = 1, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2)
+    poke.1.hp <- Poke.Attack(poke.2.attack, poke.2.level, attack.num = 1, poke.2.moves, poke.1.defense, poke.1.hp, poke.1.type.1, poke.1.type.2)
+  } else {
+    poke.1.hp <- Poke.Attack(poke.1.attack, poke.1.level, attack.num = 1, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2)
+    poke.2.hp <- Poke.Attack(poke.2.attack, poke.2.level, attack.num = 1, poke.2.moves, poke.1.defense, poke.1.hp, poke.1.type.1, poke.1.type.2)
+  }
+}
+
+
+View(damage.table)
+var <- filter_(damage.table, ~"flying"== rownames(damage.table)) %>% 
+  select_("flying")
+
+Poke.Attack <- function(poke.1.attack, poke.1.level, attack.num, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2) {
+  if(sample(1:100,1) > poke.1.moves[attack.num, 4]) {
+    return(0)
+  }
+  crit <- 1
+  if(sample(1:100, 1) > poke.1.moves[attack.num, 5]) {
+    crit <- 2
+  }
+  View(poke.1.moves)
+  
+  a <- (((2 * poke.1.level) / 5)) * (poke.1.attack/poke.1.defense) * poke.1.moves[attack.num, 3]
+  # type adjustments & crit
+  print(poke.2.type.1)
+  type.1.mult <- filter_(damage.table, ~poke.2.type.1 == rownames(damage.table)) %>% 
+    select_(poke.2.type.1)
+    
+  type.1.mult <- type.1.mult[1, 1]
+  
+  print(paste("value of crit 1 is", type.1.mult))
+
+  type.2.mult <- 1
+  
+  if(exists("poke.2.type.2")) {
+    type.2.mult <- filter_(damage.table, ~poke.2.type.2 == rownames(damage.table)) %>% 
+    select_(poke.2.type.2)
+    type.2.mult <- type.2.mult[1, 1]
+  }
+  
+  c <- type.1.mult * type.2.mult * crit
+
+  damage <- round(((a/50) + 2 * c) * sample(85:100, 1) / 100, 0)
+  
+
+  print(paste(poke.1.name, "did", damage, "with", poke.1.moves[attack.num, 2]))
+  #return(poke.2.hp - damage)
+}
+
 # Get data for all the pokemon in gen 1
+LoadPokemon <- function() {
 if(!file.exists("data/Pokemon.csv")) {
   
   first.gen <- data.frame()
@@ -64,21 +137,22 @@ if(!file.exists("data/Pokemon.csv")) {
   write.csv(first.gen, file = "data/Pokemon.csv")
 } else {
   first.gen <- read.csv("data/Pokemon.csv")
+  first.gen <- first.gen %>% select(-id)
 }
 
 colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
-
+return(first.gen)
 }
 
 LoadDamageTable <- function() {
-
+  
+  type.names <- c("normal", "fighting", "flying", "poison", "ground", "rock", "bug", 
+                  "ghost", "steel", "fire", "water", "grass", "electric", "psychic", 
+                  "ice", "dragon", "dark", "fairy")
+  
   if(!file.exists("data/damage_table.csv")) {
     
     nums <- c(1:18)
-    
-    type.names <- c("normal", "fighting", "flying", "poison", "ground", "rock", "bug", 
-                    "ghost", "steel", "fire", "water", "grass", "electric", "psychic", 
-                    "ice", "dragon", "dark", "fairy")
     
     damage.table <- data.frame()
     
@@ -123,67 +197,75 @@ LoadDamageTable <- function() {
     write.csv(damage.table, file = "data/damage_table.csv")
   } else {
       damage.table <- read.csv("data/damage_table.csv")
+      damage.table <- damage.table %>% select(-X)
+      row.names(damage.table) <- type.names
   }
-}
-
-LoadImages <- function(name1, name2) {
-  image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", name1, ".png"))
-  
-  download.file(image.urls, destfile = paste0("img/", name1, ".png"), mode = "wb")
-  
-  image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", name2, ".png"))
-  
-  download.file(image.urls, destfile = paste0("img/", name2, ".png"), mode = "wb")
+  return(damage.table)
 }
 
 getMoves <- function(get.name) {
   pokemon.url <- paste(base.url,"pokemon/", get.name, "/", sep = "")
   response <- GET(pokemon.url)
-  print(names(response))
+
   body <- content(response, "text")
   poke.data <- fromJSON(body)
-  print(names(poke.data))
-  print(is.data.frame(poke.data))
-  print(is.data.frame(poke.data$moves))
-  poke.moves <- head(poke.data$moves)
+
+  poke.moves <- (poke.data$moves)
   poke.moves <- flatten(poke.moves)
-  View(poke.moves)
-  print(colnames(poke.moves))
+
   num.rows <- nrow(poke.moves)
+  if(num.rows > 167) {
+    num.rows <- 167
+  }
+
   nums <- c(1:num.rows)
   moves <- data.frame()
 
-  
   row.index <- 0
-  
+  nums <- sample(nums, 10)
+
   for (index in nums) {
-    print(nums)  
     url <- toString(poke.moves[index, 2])
-    print(url)
+
     response <- GET(url)
-    print(names(response))
+    
     body <- content(response, "text")
     temp.data <- fromJSON(body, flatten = TRUE)
+    
     does.damage <- temp.data$meta$category$name
-    if(does.damage == "damage" || does.damage == "damage+ailment") {
-      row.index <- row.index + 1
-      moves[row.index, 1] <- temp.data$id
-      print(temp.data$id)
-      moves[row.index, 2] <- temp.data$name
-      moves[row.index, 3] <- temp.data$power
-      print("adding value 4")
-      print("adding value 5")
-      print("adding value 6")
-      print("adding value 7")
-      print("adding value 8")
-    }
-    
-    print((move.data))
-    
-    print(is.data.frame(move.data))
+
+    if(does.damage == "damage" || does.damage == "damage+ailment") { 
+      row.index <- row.index + 1 
+      moves[row.index, 1] <- temp.data$id 
+      print(temp.data$id) 
+      moves[row.index, 2] <- temp.data$name 
+      moves[row.index, 3] <- temp.data$power 
+      moves[row.index, 4] <- temp.data$accuracy 
+      moves[row.index, 5] <- temp.data$meta$crit_rate 
+      moves[row.index, 6] <- temp.data$damage_class$name 
+      moves[row.index, 7] <- temp.data$type$name 
+    } 
     
   }
   
   colnames(moves) <- c("Id", "Name", "Power", "Accuracy", "Crit Rate", "Damage Class", "Type")
   return(moves)
 }
+
+LoadAllImages <- funtion() {
+  poke.nums <- c(1:151)
+  if(file.exists("data/151.png")){ 
+    for(p in poke.nums) {
+      image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", p, ".png"))
+      
+      download.file(image.urls, destfile = paste0("img/", p, ".png"), mode = "wb")
+      }
+   }
+}
+
+
+
+
+
+
+
