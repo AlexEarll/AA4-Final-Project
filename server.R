@@ -2,12 +2,18 @@
 library("shiny")
 library("dplyr")
 library("ggplot2")
+# install.packages("colourpicker")
+library("colourpicker")
 
+# Reads and saves the dataset
 pokemon.data <- read.csv("data/Pokemon-2.csv", stringsAsFactors=FALSE) %>% 
   select(pokemon, id, type_1, attack, defense, hp, special_attack, special_defense)
 
 server <- function(input, output, clientData, session) {
+  # Creates a reactive variable
   filtered.one <- reactive({
+    # Checks if the action button for the first pokemon box was clicked
+    # Gathers the first pokemon statistics
     if(input$action.button.one) {
       pokemon.data <- pokemon.data %>% 
         filter(pokemon == input$first.poke) %>% 
@@ -21,8 +27,12 @@ server <- function(input, output, clientData, session) {
     }
   })
   
+  # Creates a reactive variable
   filtered.two <- reactive({
+    # Checks if the action button in the second pokemon box was chosen
     if(input$action.button.two) {
+      # Checks if the action button for the second pokemon box was clicked
+      # Gathers the first pokemon statistics
       pokemon.data <- pokemon.data %>% 
         filter(pokemon == input$second.poke) %>% 
         select(pokemon, id, attack, defense, hp)
@@ -35,12 +45,11 @@ server <- function(input, output, clientData, session) {
     }
   })
   
-  
   # Outputs the value of the first pokemon chosen 
   # Then outputs interactive stat options for pokemon one
   output$first.poke <- renderUI({
-    selectInput("first.poke", 
-                "First Pokemon:",
+    selectInput("first.poke",
+                label = NULL,
                 choices = c(Choose = "", pokemon.data$pokemon),
                 selected = NULL)
   })
@@ -48,15 +57,18 @@ server <- function(input, output, clientData, session) {
   output$hp.one <- renderUI({
     numericInput("hp.one", 
                  "Pokemon HP:",
-                 min = 0, max = 20, value = 0, step = 0.5)
+                 min = 1,
+                 max = 20,
+                 value = 0, 
+                 step = 0.5)
   })
-  
+    
   output$attack.one <- renderUI({
     numericInput("attack.one", 
                  "Pokemon Attack:",
                  min = 1, max = 20, value = 0, step = 0.5)
   })
-  
+    
   output$defense.one <- renderUI({
     numericInput("defense.one", 
                  "Pokemon Defense:",
@@ -66,20 +78,20 @@ server <- function(input, output, clientData, session) {
   output$type.one <- renderUI({
     selectInput("type.one",
                 label = "Pokemon Type:",
-                choices = c(Type = "", "VARIABLE TYPES"),
+                choices = pokemon.data[pokemon.data$pokemon == input$first.poke, "type_1"],
                 selected = "")
   })
   
   # Outputs the value of the second pokemon chosen 
   # Then outputs interactive stat options for pokemon two
   output$second.poke <- renderUI({
-    selectInput("second.poke", 
-                "Second Pokemon:", 
+    selectInput("second.poke",
+                label = NULL,
                 choices = c(Choose = "", pokemon.data$pokemon),
                 selected = NULL)
   })
-  
-  
+    
+    
   output$hp.two <- renderUI({
     numericInput("hp.two", 
                  "Pokemon HP:",
@@ -97,11 +109,11 @@ server <- function(input, output, clientData, session) {
                  "Pokemon Defense:",
                  min = 1, max = 20, value = 0, step = 0.5)
   })
-  
+    
   output$type.two <- renderUI({
     selectInput("type.two",
                 label = "Pokemon Type:",
-                choices = c(Type = "", "VARIABLE TYPES"),
+                choices = pokemon.data[pokemon.data$pokemon == input$second.poke, "type_1"],
                 selected = "")
   })
   
@@ -141,19 +153,15 @@ server <- function(input, output, clientData, session) {
                     label = paste(poke.two, "Defense:")
     )
     
-    updateTextInput(session, "type.two",
-                    label = paste(poke.two, "Type:")
-    )
-    
-    output$one.table <- renderTable({
+    # Assigns a reactive renderTable() function to produce a table displaying the statistics of the pokemon chosen
+    output$one.table <- renderTable(bordered = TRUE, {
       filtered.one()
     })
     
-    output$two.table <- renderTable({
+    output$two.table <- renderTable(bordered = TRUE, {
       filtered.two()
     })
   })
+  }
+
   
-  
-  
-}
