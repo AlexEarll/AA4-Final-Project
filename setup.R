@@ -32,6 +32,7 @@ damage.table <- LoadDamageTable()
 
 View(first.gen)
 poke.1.name <- "charizard"
+View(first.gen)
 poke.1.moves <- head(getMoves(poke.1.name), 4)
 poke.1.stats <- filter(first.gen, name == poke.1.name)
 poke.1.level <- 100
@@ -131,17 +132,27 @@ if(!file.exists("data/Pokemon.csv")) {
     first.gen[x, 8] <- temp.data$stats$base_stat[2]
     first.gen[x, 9] <- temp.data$stats$base_stat[3]
     first.gen[x, 10] <- temp.data$stats$base_stat[1]
+    
+    pokemon.url = paste0(base.url, "pokemon-species/", x)
+    print(pokemon.url)
+    
+    response <- GET(pokemon.url)
+    body <- content(response, "text", encoding = "UTF-8")
+    
+    temp.data <- fromJSON(body, flatten = TRUE)
+    
+    first.gen[x, 11] <- temp.data$color$name
   }
   write.csv(first.gen, file = "data/Pokemon.csv")
 } else {
   first.gen <- read.csv("data/Pokemon.csv", stringsAsFactors = FALSE)
-  colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
-  if(length(colnames(first.gen)) == 11) {
+  colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed", "color")
+  if(length(colnames(first.gen)) == 12) {
     first.gen <- first.gen %>% select(-id)
   }
 }
 
-colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
+colnames(first.gen) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed", "color")
 return(first.gen)
 }
 
@@ -260,13 +271,7 @@ LoadAllImages <- funtion() {
       image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", p, ".png"))
       
       download.file(image.urls, destfile = paste0("img/", p, ".png"), mode = "wb")
-      }
-   }
+    }
+  }
 }
-
-
-
-
-
-
 
