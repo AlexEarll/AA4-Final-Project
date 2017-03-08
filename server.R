@@ -15,13 +15,21 @@ server <- function(input, output, clientData, session) {
     # Checks if the action button for the first pokemon box was clicked
     # Gathers the first pokemon statistics
     if(input$action.button.one) {
-      pokemon.data <- pokemon.data %>% 
+      pokemon.data <- pokemon.data %>%
         filter(pokemon == input$first.poke) %>% 
         select(pokemon, id, attack, defense, hp)
       pokemon.data["pokemon"] <- input$first.poke
       pokemon.data["id"] <- pokemon.data$id
       pokemon.data["hp"] <- pokemon.data$hp - input$hp.one
-      pokemon.data["defense"] <- pokemon.data$defense - input$defense.one
+      if(input$action.button.two) {
+        if(input$type.one == input$type.two) {
+          pokemon.data["defense"] <- pokemon.data$defense - ((((((((2 * input$level.two) / 5) + 2) * input$attack.two * input$hp.two) / input$defense.one) / 50) + 2) * 1.5)
+        } else {
+          pokemon.data["defense"] <- pokemon.data$defense - (((((((2 * input$level.two) / 5) + 2) * input$attack.two * input$hp.two) / input$defense.one) / 50) + 2)
+        }
+      } else {
+        pokemon.data["defense"] <- pokemon.data$defense
+      }
       pokemon.data["attack"] <- pokemon.data$attack - input$attack.one
       return(pokemon.data)
     }
@@ -39,7 +47,15 @@ server <- function(input, output, clientData, session) {
       pokemon.data["pokemon"] <- input$second.poke
       pokemon.data["id"] <- pokemon.data$id
       pokemon.data["hp"] <- pokemon.data$hp - input$hp.two
-      pokemon.data["defense"] <- pokemon.data$defense - input$defense.two
+      if(input$action.button.one) {
+        if(input$type.one == input$type.two) {
+          pokemon.data["defense"] <- pokemon.data$defense - ((((((((2 * input$level.one)/5)+2) * input$attack.one * input$hp.one) / input$defense.two) / 50) + 2) * 1.5)
+        } else {
+          pokemon.data["defense"] <- pokemon.data$defense - (((((((2 * input$level.one)/5)+2) * input$attack.one * input$hp.one) / input$defense.two) / 50) + 2)
+        }
+      } else {
+        pokemon.data["defense"] <- pokemon.data$defense
+      }
       pokemon.data["attack"] <- pokemon.data$attack - input$attack.two
       return(pokemon.data)
     }
@@ -54,11 +70,17 @@ server <- function(input, output, clientData, session) {
                 selected = NULL)
   })
   
+  output$level.one <- renderUI({
+    numericInput("level.one",
+                 "Pokemon Level:",
+                 min = 1, max = 100, value = 1, step = 1)
+  })
+  
   output$hp.one <- renderUI({
     numericInput("hp.one", 
                  "Pokemon HP:",
                  min = 1,
-                 max = 20,
+                 max = 714,
                  value = 0, 
                  step = 0.5)
   })
@@ -66,13 +88,13 @@ server <- function(input, output, clientData, session) {
   output$attack.one <- renderUI({
     numericInput("attack.one", 
                  "Pokemon Attack:",
-                 min = 1, max = 20, value = 0, step = 0.5)
+                 min = 1, max = 504, value = 0, step = 0.5)
   })
     
   output$defense.one <- renderUI({
     numericInput("defense.one", 
                  "Pokemon Defense:",
-                 min = 1, max = 20, value = 0, step = 0.5)
+                 min = 1, max = 614, value = 0, step = 0.5)
   })
   
   output$type.one <- renderUI({
@@ -91,23 +113,28 @@ server <- function(input, output, clientData, session) {
                 selected = NULL)
   })
     
+  output$level.two <- renderUI({
+    numericInput("level.two",
+                 "Pokemon Level:",
+                 min = 1, max = 100, value = 1, step = 1)
+  })
     
   output$hp.two <- renderUI({
     numericInput("hp.two", 
                  "Pokemon HP:",
-                 min = 1, max = 20, value = 0, step = 0.5)
+                 min = 1, max = 714, value = 0, step = 0.5)
   })
   
   output$attack.two <- renderUI({
     numericInput("attack.two", 
                  "Pokemon Attack:",
-                 min = 1, max = 20, value = 0, step = 0.5)
+                 min = 1, max = 504, value = 0, step = 0.5)
   })
   
   output$defense.two <- renderUI({
     numericInput("defense.two", 
                  "Pokemon Defense:",
-                 min = 1, max = 20, value = 0, step = 0.5)
+                 min = 1, max = 614, value = 0, step = 0.5)
   })
     
   output$type.two <- renderUI({
@@ -116,6 +143,20 @@ server <- function(input, output, clientData, session) {
                 choices = pokemon.data[pokemon.data$pokemon == input$second.poke, "type_1"],
                 selected = "")
   })
+  
+  # Assigns a reactive renderTable() function to produce a table displaying the statistics of the pokemon chosen
+  output$one.table <- renderTable(bordered = TRUE, {
+    filtered.one()
+  })
+  
+  output$two.table <- renderTable(bordered = TRUE, {
+    filtered.two()
+  })
+  
+  output$table.sent <- renderText({
+    "The first pokemon that gets a negative value loses."
+  })
+  
   
   # Takes in the input of each pokemon, and updates the stat labels to match for both pokemon chose
   observe({
@@ -152,15 +193,6 @@ server <- function(input, output, clientData, session) {
     updateTextInput(session, "defense.two",
                     label = paste(poke.two, "Defense:")
     )
-    
-    # Assigns a reactive renderTable() function to produce a table displaying the statistics of the pokemon chosen
-    output$one.table <- renderTable(bordered = TRUE, {
-      filtered.one()
-    })
-    
-    output$two.table <- renderTable(bordered = TRUE, {
-      filtered.two()
-    })
   })
   }
 

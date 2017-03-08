@@ -1,6 +1,7 @@
 library("colourpicker")
 
 # Defines a UI using a fluidPage() layout   
+# Defines a UI using a fluidPage() layout   
 ui <- navbarPage("Pokemon Stats Explorer!",
                  tabPanel("Battle",
                           titlePanel("Pokemon Battle Stats"),
@@ -10,36 +11,44 @@ ui <- navbarPage("Pokemon Stats Explorer!",
                               uiOutput("first.poke"),
                               h3("Base Stats"),
                               splitLayout(
-                                uiOutput("hp.one"),
-                                uiOutput("attack.one")),
+                                uiOutput("level.one"),
+                                uiOutput("hp.one")),
                               splitLayout(
-                                uiOutput("defense.one"),
-                                uiOutput("type.one")
-                              ), 
-                              actionButton("action.button.one", "Begin!")
+                                uiOutput("attack.one"),
+                                uiOutput("defense.one")), 
+                              uiOutput("type.one"),
+                              actionButton("action.button.one", "Change Stats", class = "btn-primary")
                             )),
                             column(6, wellPanel(
                               h3("Pokemon Two"),
                               uiOutput("second.poke"),
                               h3("Base Stats"),
                               splitLayout(
-                                uiOutput("hp.two"),
-                                uiOutput("attack.two")),
+                                uiOutput("level.two"),
+                                uiOutput("hp.two")),
                               splitLayout(
-                                uiOutput("defense.two"),
-                                uiOutput("type.two")),
-                              actionButton("action.button.two", "Begin!")
+                                uiOutput("attack.two"),
+                                uiOutput("defense.two")),
+                              uiOutput("type.two"),
+                              actionButton("action.button.two", "Change Stats", class = "btn-primary")
                             )),
                             column(12, tabsetPanel(type = "tabs", 
                                                    tabPanel(strong("Battle")), 
                                                    tabPanel(strong("Table"),
-                                                    
+                                                            verbatimTextOutput("table.sent"), 
+                                                            
+                                                            
+                                                            
                                                             tableOutput("one.table"),
                                                             tableOutput("two.table")), 
                                                    tabPanel(strong("Calculations")
                                                    )
                             )
-                          )
+                            )
                           )
                  )
 )
+                            
+                            
+                            
+                            
