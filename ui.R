@@ -2,7 +2,7 @@
 library("shinythemes")
 # Defines a UI using a fluidPage() layout   
 # Defines a UI using a fluidPage() layout   
-ui <- navbarPage("Pokemon Stats Explorer!", theme = shinytheme("superhero"),
+ui <- navbarPage("Pokemon Stats Explorer!", theme = shinytheme("united"),
                  tabPanel("Battle",
                           titlePanel("Pokemon Battle Stats"),
                           fluidRow(
@@ -56,6 +56,14 @@ ui <- navbarPage("Pokemon Stats Explorer!", theme = shinytheme("superhero"),
                           
                           #uiOutput("images"),
                           #uiOutput("names")
+                 ),
+                 tabPanel("Damage Type Multipliers",
+                    h2(strong("Damage Type Multipliers")),
+                    h4("This table shows which pokemon are effective/resistive to each type. To use the table,
+                       find the type you want know the effects on and then go down the column to find the multipliers
+                       applied by attacks of the type to the left."),
+                    br()
+                     # tableOutput("damamge.table")
                  ),
                  tabPanel("Home",
                           h2(strong("Exploring Data Interactions Through Pokemon")),

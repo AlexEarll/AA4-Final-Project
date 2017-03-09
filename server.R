@@ -297,17 +297,17 @@ server <- function(input, output, clientData, session) {
    
    LoadAllImages <- function() {
       poke.nums <- c(1:151)
-      if(file.exists("data/151.png")){ 
+      var <- file.exists("www/img/151.png")
+      print(var)
+      if(!var){ 
          for(p in poke.nums) {
             image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", p, ".png"))
             
-            download.file(image.urls, destfile = paste0("img/", p, ".png"), mode = "wb")
+            download.file(image.urls, destfile = paste0("www/img/", p, ".png"), mode = "wb")
          }
       }
    }
-   
-   
-   
+   LoadAllImages()
 #_________________________________________________________________________________________________________________
    
    poke.values <- reactiveValues(pokemon.data = LoadPokemon(),
@@ -326,7 +326,9 @@ server <- function(input, output, clientData, session) {
                                  poke.2.battle = "",
                                  battle.table.1 = data.frame(),
                                  battle.table.2 = data.frame(),
-                                 poke.turn = 0)
+                                 poke.turn = 0,
+                                 poke.1.mult = FALSE,
+                                 poke.2.mult = FALSE)
    
    observeEvent(input$level.one, {
       poke.values$poke.1.level <- input$level.one
@@ -397,13 +399,25 @@ server <- function(input, output, clientData, session) {
    })
    
    output$battle.1.text <- renderText({
-      paste(poke.values$poke.1.name, "did", poke.values$poke.1.battle[4], "damage to", 
-            poke.values$poke.2.name, "with the attack", poke.values$poke.1.battle[6])
+      if(poke.values$poke.1.stats[1,7] <= 0) {
+         print("que")
+         paste(poke.values$poke.2.name, "wins! Chose another set of pokemon")
+      }
+      if(poke.values$poke.1.stats[1,7] > 0) {
+         paste(poke.values$poke.1.name, "did", poke.values$poke.1.battle[4], "damage to", 
+               poke.values$poke.2.name, "with the attack", poke.values$poke.1.battle[6])
+      }
    })
    
    output$battle.2.text <- renderText({
-      paste(poke.values$poke.2.name, "did", poke.values$poke.2.battle[4], "damage to", 
-            poke.values$poke.1.name, "with the attack", poke.values$poke.2.battle[6])
+      if(poke.values$poke.2.stats[1,7] <= 0) {
+         print("que")
+         paste(poke.values$poke.1.name, "wins! Chose another set of pokemon")
+      }
+      if(poke.values$poke.1.stats[1,7] > 0) {
+         paste(poke.values$poke.2.name, "did", poke.values$poke.2.battle[4], "damage to", 
+               poke.values$poke.1.name, "with the attack", poke.values$poke.2.battle[6])
+      }
    })
 #___________________________________________________________________________________________________________________   
    
@@ -504,17 +518,15 @@ server <- function(input, output, clientData, session) {
    })
    
    # Assigns a reactive renderTable() function to produce a table displaying the statistics of the pokemon chosen
-   output$one.table <- renderTable(bordered = TRUE, {
-      filtered.one()
-   })
-   
-   output$two.table <- renderTable(bordered = TRUE, {
-      filtered.two()
-   })
    
    output$table.sent <- renderText({
-      "The first pokemon that gets a negative value loses."
+         "Below is the output for each round that is ran. Pokemon have their damamge increased when attacking pokemon of a type that is 
+         weak to their attacks. When a pokemon reaches zero health or less they will faint. THen its time to pick new pokemon to duel!"
    })
+   
+   # output$damage.table <- tableOutput({
+   #    LoadDamageTable()
+   # })
    
 #______________________________________________________________________________________________________________________________   
    
@@ -540,32 +552,7 @@ server <- function(input, output, clientData, session) {
    
 #_____________________________________________________________________________________________________________________________   
    
-   RenamePokemonData <- function() {
-      return.data <- LoadPokemon() 
-      colnames(return.data) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
-      return(return.data)
-   }
-   
-   image.vector <- function() {
-      poke.data <- RenamePokemonData()
-      empty.vector <- c()
-      for(i in poke.data$id) {
-         link <- paste0("img/", i, ".png")
-         empty.vector <- append(empty.vector, paste0('<img src=', link,'></img>'))
-      }
-      
-      return(empty.vector)
-   }
-   
-   images <- data.frame(
-      name = RenamePokemonData(),
-      images = image.vector()
-   )
-   
-   output$image.table <- DT::renderDataTable({
-      DT::datatable(images, colnames = c("ID", "Name", "Type 1", "Type 2", "Attack", "Defense", "HP", "Special Attack", "Special Defense", "Speed", "Image"), escape = FALSE, rownames = FALSE)
-   })
-   
+  
 
 #__________________________________________________________________________________________________________________________________   
    # Takes in the input of each pokemon, and updates the stat labels to match for both pokemon chose
@@ -609,10 +596,34 @@ server <- function(input, output, clientData, session) {
       updateNumericInput(session, "hp.one", value = (stat.1.observe[1,7] + level.1.observe * 2.5))
       
 
-      
       updateNumericInput(session, "hp.two", value = (stat.2.observe[1,7] + level.2.observe * 2.5))
       
-    
+      RenamePokemonData <- function() {
+         return.data <- LoadPokemon() 
+         colnames(return.data) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
+         return(return.data)
+      }
+      
+      image.vector <- function() {
+         poke.data <- RenamePokemonData()
+         empty.vector <- c()
+         for(i in poke.data$id) {
+            link <- paste0("img/", i, ".png")
+            empty.vector <- append(empty.vector, paste0('<img src=', link,'></img>'))
+         }
+         
+         return(empty.vector)
+      }
+      
+      images <- data.frame(
+         name = RenamePokemonData(),
+         images = image.vector()
+      )
+      
+      output$image.table <- DT::renderDataTable({
+         DT::datatable(images, colnames = c("ID", "Name", "Type 1", "Type 2", "Attack", "Defense", "HP", "Special Attack", "Special Defense", "Speed", "Image"), escape = FALSE, rownames = FALSE)
+      })
+      
    })
 }
 

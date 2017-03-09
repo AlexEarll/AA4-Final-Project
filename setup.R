@@ -245,19 +245,6 @@ getMoves <- function(get.name) {
       
    }
    
-   colnames(moves) <- c("Id", "Name", "Power", "Accuracy", "Crit Rate", "Damage Class", "Type")
-   return(moves)
-}
-
-LoadAllImages <- funtion() {
-   poke.nums <- c(1:151)
-   if(file.exists("data/151.png")){ 
-      for(p in poke.nums) {
-         image.urls <- c(paste0("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/", p, ".png"))
-         
-         download.file(image.urls, destfile = paste0("img/", p, ".png"), mode = "wb")
-      }
+ 
    }
 }
-
-
