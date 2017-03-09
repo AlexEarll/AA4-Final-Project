@@ -247,4 +247,69 @@ getMoves <- function(get.name) {
    
  
    }
-}
+
+
+
+# sets the y scale for the graphs
+y_scale <- scale_y_continuous(limits = range(wb.co2.join$`% Diff. in per capita GDP due to climate change by 2040`))
+
+# Creates a plot of the poverty data frame
+plot.poverty.no.title <- ggplot(wb.poverty.join, aes(`Ratio at national poverty lines (% of population)`,
+                                                     `% Diff. in per capita GDP due to climate change by 2040`,
+                                                     color = Name)) + 
+   geom_point(size = 2) +
+   y_scale
+
+# adds a title to that plot from data frame above    
+plot.poverty.data <- plot.poverty.no.title + ggtitle("Effect of climate change on GDP for countries 1 standard\ndeviation above the mean for % population at poverty lines") +
+   theme(plot.title = element_text(lineheight=.8, face="bold"))
+
+
+
+
+# Sets a ranges variable to x/y null to allow for user interfacing with graph
+ranges <- reactiveValues(x = NULL, y = NULL)
+
+# Creates the plot to be called in the UI. Sets titles/axiis, along with x/y/color fill values
+output$poke.plot.1 <- renderPlot({
+   
+   plot.iris.data <- ggplot(data = LoadPokemon(), 
+                            mapping = aes(x = input$x.choice, y = input$y.choice, color = input$color.choice)) +
+      geom_point() +
+      scale_fill_discrete(name = input$color.choice) +
+      xlab("Component Width (in cm.)") +
+      ylab('Component Length (in cm.)') +
+      labs(title = paste(input$sepal.petal, "Measurments by Species")) +
+      coord_cartesian(xlim = ranges$x, ylim = ranges$y)
+   
+   return(plot.iris.data)
+})
+
+
+# When a double-click happens, check if there's a brush on the plot.
+# If so, zoom to the brush bounds; if not, reset the zoom.
+observeEvent(input$plot1_dblclick, {
+   
+   brush <- input$plot1_brush
+   
+   if (!is.null(brush)) {
+      ranges$x <- c(brush$xmin, brush$xmax)
+      ranges$y <- c(brush$ymin, brush$ymax)
+      
+   } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+   }
+})
+
+
+plotOutput("poke.plot.1", dblclick = "plot1_dblclick", brush = brushOpts(id = "plot1_brush", resetOnNew = TRUE))
+
+
+
+
+selectInput('xcol', 'X Variable', names(iris)),
+selectInput('ycol', 'Y Variable', names(iris),
+            selected=names(iris)[[2]]),
+numericInput('clusters', 'Cluster count', 3,
+             min = 1, max = 9)

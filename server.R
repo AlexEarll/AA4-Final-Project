@@ -5,6 +5,7 @@ library("ggplot2")
 library("httr")
 library("jsonlite")
 library("DT")
+library("Cairo")
 
 
 
@@ -326,9 +327,7 @@ server <- function(input, output, clientData, session) {
                                  poke.2.battle = "",
                                  battle.table.1 = data.frame(),
                                  battle.table.2 = data.frame(),
-                                 poke.turn = 0,
-                                 poke.1.mult = FALSE,
-                                 poke.2.mult = FALSE)
+                                 poke.turn = 0)
    
    observeEvent(input$level.one, {
       poke.values$poke.1.level <- input$level.one
@@ -374,21 +373,81 @@ server <- function(input, output, clientData, session) {
       print("calling battle loop")
       BattleLoop()
       
-      # print("entering post battle loop phases")
-      # poke.values$poke.turn <- poke.values$poke.turn + 1
-      # print("adding to table")
-      # print(poke.values$poke.1.battle)
-      # poke.values$battle.table.1 <- rbind(poke.values$battle.table.1, poke.values$poke.1.battle)
-      # 
-      # print("adding to table again")
-      # print(poke.values$poke.2.battle)
-      # View(t(data.frame(poke.values$poke.2.battle)))
-      # table <-t(data.frame(poke.values$poke.2.battle))
-      # poke.values$battle.table.2 <- bind_rows(table, table)
-      # 
+     
    })
    
 #___________________________________________________________________________________________________________________  
+   
+   output$x.choice <- renderUI({
+      selectInput("x.choice",
+                  label = "X Axis Variable Choice",
+                  choices = c("attack", "defense", "hp", `special_attack` = "special_attack", `special_defense` = "special_defense", "speed"),
+                  selected = "attack")
+   })
+   
+   output$y.choice <- renderUI({
+      selectInput("y.choice",
+                  label = "Y Axis Variable Choice",
+                  choices = c("defense", "attack", "hp", `special_attack` = "special_attack", `special_defense` = "special_defense", "speed"),
+                  selected = "defense")
+   })
+   
+   output$color.choice <- renderUI({
+      selectInput("color.choice",
+                  label = "Color Variable Choice",
+                  choices = c(`name` = "name", `type_1` = "type_1", `type_2` = "type_2"),
+                  selected = "name")
+   })
+   
+   
+   # Sets a ranges variable to x/y null to allow for user interfacing with graph
+   ranges <- reactiveValues(x = NULL, y = NULL)
+   
+   selected.poke.data <- reactive({
+      selected.poke.data <- select(LoadPokemon(), contains(input$x.choice), contains(input$y.choice), contains(input$color.choice))
+      return(selected.poke.data)
+   })
+   
+   # Creates the plot to be called in the UI. Sets titles/axiis, along with x/y/color fill values
+   output$poke.plot.1 <- renderPlot({
+      
+      plot.pokemon.data <- ggplot(data = selected.poke.data(), 
+                               mapping = aes(x = selected.poke.data()[,1], 
+                                             y = selected.poke.data()[,2], 
+                                             color = selected.poke.data()[,3])) +
+         scale_colour_continuous(guide = FALSE) +
+         geom_point() +
+         xlab(input$x.choice) +
+         ylab(input$y.choice) +
+         labs(title = paste(input$x.choice, "vs.", input$y.choice)) +
+         coord_cartesian(xlim = ranges$x, ylim = ranges$y)
+      
+      return(plot.pokemon.data)
+   })
+   
+   
+   # When a double-click happens, check if there's a brush on the plot.
+   # If so, zoom to the brush bounds; if not, reset the zoom.
+   observeEvent(input$plot1_dblclick, {
+      
+      brush <- input$plot1_brush
+      
+      if (!is.null(brush)) {
+         ranges$x <- c(brush$xmin, brush$xmax)
+         ranges$y <- c(brush$ymin, brush$ymax)
+         
+      } else {
+         ranges$x <- NULL
+         ranges$y <- NULL
+      }
+   })
+   
+   
+   
+   
+   
+   
+   
    
    output$battle.table.1 <- renderTable({
       (poke.values$battle.table.1)
@@ -399,25 +458,29 @@ server <- function(input, output, clientData, session) {
    })
    
    output$battle.1.text <- renderText({
+      if (poke.values$poke.1.name != "") {
       if(poke.values$poke.1.stats[1,7] <= 0) {
          print("que")
-         paste(poke.values$poke.2.name, "wins! Chose another set of pokemon")
+         paste(poke.values$poke.2.name, "wins! Choose another set of pokemon to try more battles.")
       }
-      if(poke.values$poke.1.stats[1,7] > 0) {
+      else {
          paste(poke.values$poke.1.name, "did", poke.values$poke.1.battle[4], "damage to", 
                poke.values$poke.2.name, "with the attack", poke.values$poke.1.battle[6])
+      }
       }
    })
    
    output$battle.2.text <- renderText({
+      if (poke.values$poke.2.name != "") {
       if(poke.values$poke.2.stats[1,7] <= 0) {
          print("que")
-         paste(poke.values$poke.1.name, "wins! Chose another set of pokemon")
+         paste(poke.values$poke.1.name, "wins! Choose another set of pokemon to try more battles.")
       }
-      if(poke.values$poke.1.stats[1,7] > 0) {
+      else {
          paste(poke.values$poke.2.name, "did", poke.values$poke.2.battle[4], "damage to", 
                poke.values$poke.1.name, "with the attack", poke.values$poke.2.battle[6])
       }
+      }   
    })
 #___________________________________________________________________________________________________________________   
    
@@ -517,17 +580,8 @@ server <- function(input, output, clientData, session) {
                   $$Damage:= (\frac{(\frac{(2\times Level)}{5}+2)\times Power \times A/D}{50}+2)\times Modifier$$'))
    })
    
-   # Assigns a reactive renderTable() function to produce a table displaying the statistics of the pokemon chosen
-   
-   output$table.sent <- renderText({
-         "Below is the output for each round that is ran. Pokemon have their damamge increased when attacking pokemon of a type that is 
-         weak to their attacks. When a pokemon reaches zero health or less they will faint. THen its time to pick new pokemon to duel!"
-   })
-   
-   # output$damage.table <- tableOutput({
-   #    LoadDamageTable()
-   # })
-   
+
+
 #______________________________________________________________________________________________________________________________   
    
    observeEvent(input$first.poke, {
