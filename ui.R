@@ -79,24 +79,26 @@ ui <- navbarPage(h2("Pokemon Stats Explorer!"), theme = shinytheme("united"),
                                                              br(),
                                                              splitLayout(
                                                              verbatimTextOutput("battle.1.text"),
-                                                             verbatimTextOutput("battle.2.text"))), 
-                                                    tabPanel(strong("Calculations"),
-                                                             fluidPage(
-                                                                title = 'Stat Equations Used',
-                                                                withMathJax(),
-                                                                uiOutput('ex3')
-                                                             )
-                                                    )
+                                                             verbatimTextOutput("battle.2.text")))
+                                                    
+                             
+                                                    
                              )
                              )
                           )
                  ),
-                 tabPanel(h3("Damage Type Multipliers"),
-                    h2(strong("Damage Type Multipliers")),
-                    h4("This table shows which pokemon are effective/resistive to each type. To use the table,
-                       find the type you want know the effects on and then go down the column to find the multipliers
-                       applied by attacks of the type to the left."),
-                    br()
+                 tabPanel(h3(strong("Choose Graph")),
+                          sidebarPanel(
+                             
+                             
+                             selectInput('xcol', 'X Variable', c("attack", "defense", "hp", "special_attack", "special_defense", "speed")),
+                             selectInput('ycol', 'Y Variable', c("attack", "defense", "hp", "special_attack", "special_defense", "speed"),
+                                         selected="Defense")
+                          ),
+                          mainPanel(
+                             plotOutput('plot1')
+                          )
+               
             
                  ),
                  tabPanel(h3("Interactive Graph"),

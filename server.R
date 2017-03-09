@@ -9,23 +9,6 @@ library("Cairo")
 
 
 
-# Getting stats
-# Start: http://pokeapi.co/api/v2/pokemon/?count=150&limit=150
-# go into pokemon url
-# Get stats from JSON   
-# hp, defence, attack, speed, type, color one for block colors
-# Get moves and then query the moves api
-# Check for key words or make super if statement tree
-# Check power accuracy and type
-# 'is damaging' and crit rate is in meta js
-
-# Backend
-# need something resembling an enum for damage types
-# probably a damage type table represented by a table in excel
-# Damage multipliers 
-# http://bulbapedia.bulbagarden.net/wiki/Type/Type_chart
-# turn based loop
-# print into a csv which we read out of after for data processing
 move.id <- 1
 
 ###Setup###
@@ -37,113 +20,89 @@ base.url <- "http://pokeapi.co/api/v2/"
 #_____________________________________________________________________________________________________________________________________________________
 
 
-# Change ui / server to take two sets of moves in a dropdown, and then a "BATTLE!" button that activates the move
-# MAY need a reset button
-# In all current input choices, except level, change default value to be default of pokemon
-# Function that adds lines (battle) to a data table with hp and damage dealt
-# Do the math output
-# Delete battle tab, replace with battle table (table)
-
-#select(pokemon, id, type_1, attack, defense, hp, special_attack, special_defense)
 server <- function(input, output, clientData, session) {
    themes <- shinytheme("darkly")
    
+   #run the logic behind the pokemon fighitng
    BattleLoop <- function() {
-    
-      print("entering battle loop")
+      
+      #run to check which pokemon goes first using speed
       if(poke.values$poke.1.stats[1,10] > poke.values$poke.2.stats[1,10]) {
-         if(poke.values$poke.1.stats[1,7] > 0) {
-            temp.hp <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level,
-                                   attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]),
-                                   poke.values$poke.1.moves, poke.values$poke.2.stats[1,6],poke.values$poke.2.stats[1,7], 
-                                   poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
-            
-            damage.dealt <- poke.values$poke.2.stats[1,7] - temp.hp
-            poke.values$poke.1.battle <-  c(poke.values$poke.turn, poke.values$poke.1.name, poke.values$poke.2.stats[1,7], 
-                                            damage.dealt, temp.hp, poke.values$poke.1.current.move)
-            print("appending")
-             poke.values$poke.2.stats[1,7] <- temp.hp
-         }
          
-         if(poke.values$poke.2.stats[1,7] > 0) {
-            temp.hp <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, 
-                                   attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]),
-                                   poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.1.stats[1,7],
-                                   poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
-            
-            damage.dealt <- poke.values$poke.1.stats[1,7] - temp.hp
-            poke.values$poke.2.battle <-  c(poke.values$poke.turn, poke.values$poke.2.name, poke.values$poke.1.stats[1,7], damage.dealt, temp.hp, poke.values$poke.2.current.move)
-            print("appending")
-            poke.values$poke.1.stats[1,7] <- temp.hp
-         }
+         temp.hp <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level,
+                                attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]),
+                                poke.values$poke.1.moves, poke.values$poke.2.stats[1,6],poke.values$poke.2.stats[1,7], 
+                                poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
+         
+         damage.dealt <- poke.values$poke.2.stats[1,7] - temp.hp
+         poke.values$poke.1.battle <-  c(poke.values$poke.turn, poke.values$poke.1.name, poke.values$poke.2.stats[1,7], 
+                                         damage.dealt, temp.hp, poke.values$poke.1.current.move)
+         poke.values$poke.2.stats[1,7] <- temp.hp
+         
+         
+         temp.hp <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, 
+                                attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]),
+                                poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.1.stats[1,7],
+                                poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
+         
+         damage.dealt <- poke.values$poke.1.stats[1,7] - temp.hp
+         poke.values$poke.2.battle <-  c(poke.values$poke.turn, poke.values$poke.2.name, poke.values$poke.1.stats[1,7], damage.dealt, temp.hp, poke.values$poke.2.current.move)
+         poke.values$poke.1.stats[1,7] <- temp.hp
+         
       }
       
+      #check to see if pokemon are alive and hangle accoringly
       if(poke.values$poke.1.stats[1,10] <= poke.values$poke.2.stats[1,10]){
-         if(poke.values$poke.2.stats[1,7] > 0) {
-            temp.hp <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, 
-                                   attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]),
-                                   poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.1.stats[1,7],
-                                   poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
-            
-            damage.dealt <- poke.values$poke.1.stats[1,7] - temp.hp
-            poke.values$poke.2.battle <-  c(poke.values$poke.turn, poke.values$poke.2.name, poke.values$poke.1.stats[1,7], damage.dealt, temp.hp, poke.values$poke.2.current.move)
-            print("appending")
-            poke.values$poke.1.stats[1,7] <- temp.hp
-         }
          
-         if(poke.values$poke.1.stats[1,7] > 0) {
-            temp.hp <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level, 
-                                   attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]),
-                                   poke.values$poke.1.moves, poke.values$poke.2.stats[1,6], poke.values$poke.2.stats[1,7], 
-                                   poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
-            
-            damage.dealt <- poke.values$poke.2.stats[1,7] - temp.hp
-            poke.values$poke.1.battle <-  c(poke.values$poke.turn, poke.values$poke.1.name, poke.values$poke.2.stats[1,7], damage.dealt, temp.hp, poke.values$poke.1.current.move)
-            print("appending")
-            poke.values$poke.2.stats[1,7] <- temp.hp       
-         }
-      }
-      
-      if(poke.values$poke.1.stats[1,7] < 0) {
-         print(paste(poke.values$poke.1.name, "DIED"))
-      }
-      if(poke.values$poke.2.stats[1,7] < 0) {
-         print(paste(poke.values$poke.2.name, "DIED"))
+         temp.hp <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, 
+                                attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]),
+                                poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.1.stats[1,7],
+                                poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
+         
+         damage.dealt <- poke.values$poke.1.stats[1,7] - temp.hp
+         poke.values$poke.2.battle <-  c(poke.values$poke.turn, poke.values$poke.2.name, poke.values$poke.1.stats[1,7], damage.dealt, temp.hp, poke.values$poke.2.current.move)
+         poke.values$poke.1.stats[1,7] <- temp.hp
+         temp.hp <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level, 
+                                attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]),
+                                poke.values$poke.1.moves, poke.values$poke.2.stats[1,6], poke.values$poke.2.stats[1,7], 
+                                poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
+         
+         damage.dealt <- poke.values$poke.2.stats[1,7] - temp.hp
+         poke.values$poke.1.battle <-  c(poke.values$poke.turn, poke.values$poke.1.name, poke.values$poke.2.stats[1,7], damage.dealt, temp.hp, poke.values$poke.1.current.move)
+         poke.values$poke.2.stats[1,7] <- temp.hp       
       }
    }
    
    Poke.Attack <- function(poke.1.name, poke.1.attack, poke.1.level, attack.num, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2, damage.table) {
-   
       if(sample(1:100,1) > poke.1.moves[attack.num, 4]) {
          return(0)
       }
       crit <- 1
+      
       if(sample(1:100, 1) > poke.1.moves[attack.num, 5]) {
          crit <- 2
       }
       
       a <- (((2 * poke.1.level) / 5)) * (poke.1.attack/poke.2.defense) * poke.1.moves[attack.num, 3]
-      
-      
-      # type adjustments & crit
-      type.1.mult <- damage.table %>% filter_(~poke.2.type.1 == rownames(damage.table)) %>% 
-         select_(poke.2.type.1)
-      
-      type.1.mult <- type.1.mult[1, 1]
-      
+      View(poke.1.moves)
+      row <- filter_(damage.table, ~poke.1.moves[attack.num, 7] == rownames(damage.table))
+      y <- match(poke.2.type.1, colnames(damage.table))
+      # print(paste("x is", x))
+      type.1.mult <- row[1, y]
       type.2.mult <- 1
       
       if(exists("poke.2.type.2") && !is.na(poke.2.type.2)) {
-         type.2.mult <- filter_(damage.table, ~poke.2.type.2 == rownames(damage.table)) %>% 
-            select_(poke.2.type.2)
-         type.2.mult <- type.2.mult[1, 1]
+         row.2 <- filter_(damage.table, ~poke.1.moves[attack.num, 7] == rownames(damage.table))
+         y.2 <- match(poke.2.type.2, colnames(damage.table))
+         
+         type.2.mult <- row[1, y.2]
       }
       
+      # select_(poke.2.type.2)d
+      # print(paste("poke 1 name:", poke.1.name, "poke 1 attack:", var))
       c <- type.1.mult * type.2.mult * crit
       
       damage <- round(((a/50) + 2 * c) * (sample(85:100, 1) / 100), 0)
-      
-      print(paste(poke.1.name, "did", damage))
       
       return(poke.2.hp - damage)
    }
@@ -605,6 +564,24 @@ server <- function(input, output, clientData, session) {
    })
    
 #_____________________________________________________________________________________________________________________________   
+   
+   pokemon <- reactive({
+      poke.values$pokemon.data %>%
+      group_by(type_1) %>% 
+      select(id, name, attack, defense, hp, special_attack, special_defense, speed, type_1)
+   })
+   
+   selectedData <- reactive({
+      pokemon()[, c(input$xcol, input$ycol)]
+   })
+   
+   output$plot1 <- renderPlot({
+      color <- c("#984EA3", "#E41A1C",
+                 "#FF7F00",  "#377EB8", "#A65628", "#999999", "#FFFF33", "#4DAF4A", "#F781BF")
+      
+      plot(selectedData(), pch = 20, col = color, factor = factor(c("Poison", "Fire", "Flying", "Water", "Bug", "Normal", "Electric", "Ground", "Fairy")))
+      legend("topright", legend = c("Poison", "Fire", "Flying", "Water", "Bug", "Normal", "Electric", "Ground", "Fairy"), fill = color, col = factor(pokemon.data$type_1))
+   })
    
   
 
