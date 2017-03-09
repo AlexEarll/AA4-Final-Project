@@ -14,24 +14,27 @@ ui <- navbarPage("Pokemon Stats Explorer!",
                                    uiOutput("hp.one")),
                                 splitLayout(
                                    uiOutput("attack.one"),
-                                   uiOutput("defense.one")), 
-                                actionButton("action.button.one", "Change Stats", class = "btn-primary")
+                                   uiOutput("defense.one"))
                              )),
                              column(6, wellPanel(
                                 h3("Pokemon Two"),
-                                uiOutput("second.poke"),
+                                   uiOutput("second.poke"),
                                 h3("Base Stats"),
                                 splitLayout(
                                    uiOutput("level.two"),
                                    uiOutput("hp.two")),
                                 splitLayout(
                                    uiOutput("attack.two"),
-                                   uiOutput("defense.two")),
-                                actionButton("action.button.two", "Change Stats", class = "btn-primary")
+                                   uiOutput("defense.two"))
                              )),
+                             column(5, wellPanel(uiOutput("move.choice.one"))
+                                    ),
+                             column(5, wellPanel(uiOutput("move.choice.two"))
+                             ),
+                             column(2, wellPanel(actionButton("move.button", "GO!", class = "btn-primary"))
+                             ),
                              column(12, tabsetPanel(type = "tabs", 
-                                                    tabPanel(strong("Battle")), 
-                                                    tabPanel(strong("Table"),
+                                                    tabPanel(strong("Battle Table"),
                                                              verbatimTextOutput("table.sent"), 
                                                              tableOutput("one.table"),
                                                              tableOutput("two.table")), 
