@@ -1,13 +1,13 @@
 # Loads the appropriate libraries needed
 library("shiny")
 library("dplyr")
-library("ggplot2")
-# install.packages("colourpicker")
-library("colourpicker")
 
 # Reads and saves the dataset
-pokemon.data <- read.csv("data/Pokemon-2.csv", stringsAsFactors=FALSE) %>% 
-  select(pokemon, id, type_1, attack, defense, hp, special_attack, special_defense)
+pokemon.data <- read.csv("data/Pokemon-2.csv", stringsAsFactors=FALSE)
+  #select(pokemon, id, type_1, attack, defense, hp, special_attack, special_defense)
+
+
+
 
 server <- function(input, output, clientData, session) {
   # Creates a reactive variable
@@ -21,15 +21,7 @@ server <- function(input, output, clientData, session) {
       pokemon.data["pokemon"] <- input$first.poke
       pokemon.data["id"] <- pokemon.data$id
       pokemon.data["hp"] <- pokemon.data$hp - input$hp.one
-      if(input$action.button.two) {
-        if(input$type.one == input$type.two) {
-          pokemon.data["defense"] <- pokemon.data$defense - ((((((((2 * input$level.two) / 5) + 2) * input$attack.two * input$hp.two) / input$defense.one) / 50) + 2) * 1.5)
-        } else {
-          pokemon.data["defense"] <- pokemon.data$defense - (((((((2 * input$level.two) / 5) + 2) * input$attack.two * input$hp.two) / input$defense.one) / 50) + 2)
-        }
-      } else {
-        pokemon.data["defense"] <- pokemon.data$defense
-      }
+      pokemon.data["defense"] <- pokemon.data$defense
       pokemon.data["attack"] <- pokemon.data$attack - input$attack.one
       return(pokemon.data)
     }
@@ -47,15 +39,7 @@ server <- function(input, output, clientData, session) {
       pokemon.data["pokemon"] <- input$second.poke
       pokemon.data["id"] <- pokemon.data$id
       pokemon.data["hp"] <- pokemon.data$hp - input$hp.two
-      if(input$action.button.one) {
-        if(input$type.one == input$type.two) {
-          pokemon.data["defense"] <- pokemon.data$defense - ((((((((2 * input$level.one)/5)+2) * input$attack.one * input$hp.one) / input$defense.two) / 50) + 2) * 1.5)
-        } else {
-          pokemon.data["defense"] <- pokemon.data$defense - (((((((2 * input$level.one)/5)+2) * input$attack.one * input$hp.one) / input$defense.two) / 50) + 2)
-        }
-      } else {
-        pokemon.data["defense"] <- pokemon.data$defense
-      }
+      pokemon.data["defense"] <- pokemon.data$defense
       pokemon.data["attack"] <- pokemon.data$attack - input$attack.two
       return(pokemon.data)
     }
