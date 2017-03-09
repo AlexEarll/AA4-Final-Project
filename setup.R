@@ -30,6 +30,7 @@ base.url <- "http://pokeapi.co/api/v2/"
 first.gen <- LoadPokemon()
 damage.table <- LoadDamageTable()
 
+#load stats for pokemon 1
 View(first.gen)
 poke.1.name <- "charizard"
 View(first.gen)
@@ -42,7 +43,6 @@ poke.1.defense <- poke.1.stats[1, 6]
 poke.1.speed <- poke.1.stats[1, 10]
 poke.1.type.1 <- as.character(poke.1.stats[1, 3])
 poke.1.type.2 <- as.character(poke.1.stats[1, 4])
-View(poke.1.stats)
 
 poke.2.name <- "mew"
 poke.2.moves <- head(getMoves(poke.2.name), 4)
@@ -264,7 +264,7 @@ getMoves <- function(get.name) {
   return(moves)
 }
 
-LoadAllImages <- funtion() {
+LoadAllImages <- function() {
   poke.nums <- c(1:151)
   if(file.exists("data/151.png")){ 
     for(p in poke.nums) {
