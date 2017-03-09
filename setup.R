@@ -65,10 +65,6 @@ while(poke.2.hp > 0 && poke.1.hp > 0) {
 }
 
 
-View(damage.table)
-var <- filter_(damage.table, ~"flying"== rownames(damage.table)) %>% 
-   select_("flying")
-
 Poke.Attack <- function(poke.1.name, poke.1.attack, poke.1.level, attack.num, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2, damage.table) {
    if(sample(1:100,1) > poke.1.moves[attack.num, 4]) {
       return(0)

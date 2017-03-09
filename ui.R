@@ -1,4 +1,3 @@
-library("colourpicker")
 
 # Defines a UI using a fluidPage() layout   
 # Defines a UI using a fluidPage() layout   
@@ -16,7 +15,6 @@ ui <- navbarPage("Pokemon Stats Explorer!",
                                 splitLayout(
                                    uiOutput("attack.one"),
                                    uiOutput("defense.one")), 
-                                uiOutput("type.one"),
                                 actionButton("action.button.one", "Change Stats", class = "btn-primary")
                              )),
                              column(6, wellPanel(
@@ -29,16 +27,12 @@ ui <- navbarPage("Pokemon Stats Explorer!",
                                 splitLayout(
                                    uiOutput("attack.two"),
                                    uiOutput("defense.two")),
-                                uiOutput("type.two"),
                                 actionButton("action.button.two", "Change Stats", class = "btn-primary")
                              )),
                              column(12, tabsetPanel(type = "tabs", 
                                                     tabPanel(strong("Battle")), 
                                                     tabPanel(strong("Table"),
                                                              verbatimTextOutput("table.sent"), 
-                                                             
-                                                             
-                                                             
                                                              tableOutput("one.table"),
                                                              tableOutput("two.table")), 
                                                     tabPanel(strong("Calculations")
@@ -46,5 +40,8 @@ ui <- navbarPage("Pokemon Stats Explorer!",
                              )
                              )
                           )
-                 )
+                 ),
+                 tabPanel("Pokemon Reference"),
+                  tabPanel("Mission")
 )
+
