@@ -55,7 +55,8 @@ ui <- navbarPage("Pokemon Stats Explorer!",
                           p("Pokemon has been a much beloved role playing game since 1996. Players train and battle with powerful creatures called Pokemon.
                             People of all ages enjoy Pokemon around the world.
                             In 2016, Nintendo released Pokemon GO, a mobile app Pokemon game that got people up and moving outdoors.
-                            The use of video games to promote a greater social cause inspired us to create this app."),
+                            The use of video games to promote a greater social cause inspired us to create this app.
+                            We were able to achieve this using the Pokemon API: http://pokeapi.co/api/v2/ ."),
                           br(),
                           p("Like most games, Pokemon is driven by coding and statistics. Our hope was to spark an early interest in statistics and coding by showing people how theye make their favorite games work behind the scenes.
                             This app allows users to question how the math works and how powerful the pokemon they chose are in order to win, which in return can expose them to statistics and data visualization.
