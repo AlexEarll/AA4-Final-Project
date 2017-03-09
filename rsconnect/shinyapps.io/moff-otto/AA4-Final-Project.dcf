@@ -1,0 +1,11 @@
+name: AA4-Final-Project
+title: AA4-Final-Project
+account: moff-otto
+server: shinyapps.io
+appId: 162592
+bundleId: 740780
+url: https://moff-otto.shinyapps.io/AA4-Final-Project/
+when: 1489094804.94026
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|README.md|setup.R
