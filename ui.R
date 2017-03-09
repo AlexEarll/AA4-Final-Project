@@ -4,6 +4,7 @@ library("shinythemes")
 # Defines a UI using a fluidPage() layout   
 # Defines a UI using a fluidPage() layout   
 ui <- navbarPage(h2("Pokemon Stats Explorer!"), theme = shinytheme("united"),
+                 # Ad titled tab panel with descriptive text
                  tabPanel(h3("Home"),
                           h1(strong("Exploring Data Interactions Through Pokemon")),
                           h3("Created by Alex Earll, Soobin Kwon, Kirsten Anders, and Sam Otto"),
@@ -41,6 +42,7 @@ ui <- navbarPage(h2("Pokemon Stats Explorer!"), theme = shinytheme("united"),
                           DT::dataTableOutput("image.table")
                           
                  ),
+                 # Creates a tab panel for attack, hp, defense, and level inputs
                  tabPanel(h3("Battle"),
                           titlePanel("Pokemon Battle Stats"),
                           fluidRow(
@@ -66,6 +68,7 @@ ui <- navbarPage(h2("Pokemon Stats Explorer!"), theme = shinytheme("united"),
                                    uiOutput("attack.two"),
                                    uiOutput("defense.two"))
                              )),
+                             # Creats input for moves to use
                              column(5, wellPanel(uiOutput("move.choice.one"))
                                     ),
                              column(5, wellPanel(uiOutput("move.choice.two"))
@@ -87,7 +90,8 @@ ui <- navbarPage(h2("Pokemon Stats Explorer!"), theme = shinytheme("united"),
                              )
                           )
                  ),
-                 tabPanel(h3(strong("Choose Graph")),
+                 # Creats graph with pokemon data
+                 tabPanel(h3(strong("Variable Pokemon Graph")),
                           sidebarPanel(
                              
                              
@@ -101,6 +105,7 @@ ui <- navbarPage(h2("Pokemon Stats Explorer!"), theme = shinytheme("united"),
                
             
                  ),
+                 # creates tab panel with interactive graph
                  tabPanel(h3("Interactive Graph"),
                           pageWithSidebar(
                              headerPanel('Explore Pokemon Data through Graphing!'),
