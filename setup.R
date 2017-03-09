@@ -3,7 +3,6 @@ library(ggplot2)
 library(dplyr)
 library(httr)
 library(jsonlite)
-<<<<<<< HEAD
 
 ###Setup###
 pokemon.file <- read.csv("data/Pokemon.csv", stringsAsFactors=FALSE)
