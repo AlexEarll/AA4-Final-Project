@@ -4,6 +4,9 @@ library("dplyr")
 library("ggplot2")
 library("httr")
 library("jsonlite")
+library("DT")
+
+
 
 # Getting stats
 # Start: http://pokeapi.co/api/v2/pokemon/?count=150&limit=150
@@ -42,29 +45,69 @@ base.url <- "http://pokeapi.co/api/v2/"
 
 #select(pokemon, id, type_1, attack, defense, hp, special_attack, special_defense)
 server <- function(input, output, clientData, session) {
+   themes <- shinytheme("darkly")
    
    BattleLoop <- function() {
+    
+      print("entering battle loop")
       if(poke.values$poke.1.stats[1,10] > poke.values$poke.2.stats[1,10]) {
          if(poke.values$poke.1.stats[1,7] > 0) {
-            poke.values$poke.2.stats[1,7] <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level, attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]), poke.values$poke.1.moves, poke.values$poke.2.stats[1,6], poke.values$poke.1.stats[1,7], poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
+            temp.hp <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level,
+                                   attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]),
+                                   poke.values$poke.1.moves, poke.values$poke.2.stats[1,6],poke.values$poke.2.stats[1,7], 
+                                   poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
+            
+            damage.dealt <- poke.values$poke.2.stats[1,7] - temp.hp
+            poke.values$poke.1.battle <-  c(poke.values$poke.turn, poke.values$poke.1.name, poke.values$poke.2.stats[1,7], 
+                                            damage.dealt, temp.hp, poke.values$poke.1.current.move)
+            print("appending")
+             poke.values$poke.2.stats[1,7] <- temp.hp
          }
+         
          if(poke.values$poke.2.stats[1,7] > 0) {
-            poke.values$poke.1.stats[1,7] <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]), poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.2.stats[1,7], poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
-         }
-      if(poke.values$poke.1.stats[1,10] <= poke.values$poke.2.stats[1,10]){
-         if(poke.values$poke.2.stats[1,7] > 0) {
-            poke.values$poke.1.stats[1,7] <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]), poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.2.stats[1,7], poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
-         }
-         if(poke.values$poke.1.stats[1,7] > 0) {
-            poke.values$poke.2.stats[1,7] <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level, attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]), poke.values$poke.1.moves, poke.values$poke.2.stats[1,6], poke.values$poke.1.stats[1,7], poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
+            temp.hp <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, 
+                                   attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]),
+                                   poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.1.stats[1,7],
+                                   poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
+            
+            damage.dealt <- poke.values$poke.1.stats[1,7] - temp.hp
+            poke.values$poke.2.battle <-  c(poke.values$poke.turn, poke.values$poke.2.name, poke.values$poke.1.stats[1,7], damage.dealt, temp.hp, poke.values$poke.2.current.move)
+            print("appending")
+            poke.values$poke.1.stats[1,7] <- temp.hp
          }
       }
+      
+      if(poke.values$poke.1.stats[1,10] <= poke.values$poke.2.stats[1,10]){
+         if(poke.values$poke.2.stats[1,7] > 0) {
+            temp.hp <- Poke.Attack(poke.values$poke.2.name, poke.values$poke.2.stats[1,5], poke.values$poke.2.level, 
+                                   attack.num = match(poke.values$poke.2.current.move, poke.values$poke.2.moves[,2]),
+                                   poke.values$poke.2.moves, poke.values$poke.1.stats[1,6], poke.values$poke.1.stats[1,7],
+                                   poke.values$poke.1.stats[1,3], poke.values$poke.1.stats[1,4], LoadDamageTable())
+            
+            damage.dealt <- poke.values$poke.1.stats[1,7] - temp.hp
+            poke.values$poke.2.battle <-  c(poke.values$poke.turn, poke.values$poke.2.name, poke.values$poke.1.stats[1,7], damage.dealt, temp.hp, poke.values$poke.2.current.move)
+            print("appending")
+            poke.values$poke.1.stats[1,7] <- temp.hp
+         }
+         
+         if(poke.values$poke.1.stats[1,7] > 0) {
+            temp.hp <- Poke.Attack(poke.values$poke.1.name, poke.values$poke.1.stats[1,5], poke.values$poke.1.level, 
+                                   attack.num = match(poke.values$poke.1.current.move, poke.values$poke.1.moves[,2]),
+                                   poke.values$poke.1.moves, poke.values$poke.2.stats[1,6], poke.values$poke.2.stats[1,7], 
+                                   poke.values$poke.2.stats[1,3], poke.values$poke.2.stats[1,4], LoadDamageTable())
+            
+            damage.dealt <- poke.values$poke.2.stats[1,7] - temp.hp
+            poke.values$poke.1.battle <-  c(poke.values$poke.turn, poke.values$poke.1.name, poke.values$poke.2.stats[1,7], damage.dealt, temp.hp, poke.values$poke.1.current.move)
+            print("appending")
+            poke.values$poke.2.stats[1,7] <- temp.hp       
+         }
+      }
+      
       if(poke.values$poke.1.stats[1,7] < 0) {
          print(paste(poke.values$poke.1.name, "DIED"))
       }
       if(poke.values$poke.2.stats[1,7] < 0) {
          print(paste(poke.values$poke.2.name, "DIED"))
-      }
       }
    }
    
@@ -264,6 +307,9 @@ server <- function(input, output, clientData, session) {
    }
    
    
+   
+#_________________________________________________________________________________________________________________
+   
    poke.values <- reactiveValues(pokemon.data = LoadPokemon(),
                                  damage.table = LoadDamageTable(),
                                  poke.1.name = "bulbasaur",
@@ -275,7 +321,12 @@ server <- function(input, output, clientData, session) {
                                  poke.1.moves = "",
                                  poke.2.moves = "",
                                  poke.1.current.move = "",
-                                 poke.2.current.move = "")
+                                 poke.2.current.move = "",
+                                 poke.1.battle = "",
+                                 poke.2.battle = "",
+                                 battle.table.1 = data.frame(),
+                                 battle.table.2 = data.frame(),
+                                 poke.turn = 0)
    
    observeEvent(input$level.one, {
       poke.values$poke.1.level <- input$level.one
@@ -320,9 +371,40 @@ server <- function(input, output, clientData, session) {
       print(poke.values$poke.2.current.move)
       print("calling battle loop")
       BattleLoop()
+      
+      # print("entering post battle loop phases")
+      # poke.values$poke.turn <- poke.values$poke.turn + 1
+      # print("adding to table")
+      # print(poke.values$poke.1.battle)
+      # poke.values$battle.table.1 <- rbind(poke.values$battle.table.1, poke.values$poke.1.battle)
+      # 
+      # print("adding to table again")
+      # print(poke.values$poke.2.battle)
+      # View(t(data.frame(poke.values$poke.2.battle)))
+      # table <-t(data.frame(poke.values$poke.2.battle))
+      # poke.values$battle.table.2 <- bind_rows(table, table)
+      # 
    })
    
+#___________________________________________________________________________________________________________________  
    
+   output$battle.table.1 <- renderTable({
+      (poke.values$battle.table.1)
+   }) 
+   
+   output$battle.table.2 <- renderTable({
+      (poke.values$battle.table.2)
+   })
+   
+   output$battle.1.text <- renderText({
+      paste(poke.values$poke.1.name, "did", poke.values$poke.1.battle[4], "damage to", 
+            poke.values$poke.2.name, "with the attack", poke.values$poke.1.battle[6])
+   })
+   
+   output$battle.2.text <- renderText({
+      paste(poke.values$poke.2.name, "did", poke.values$poke.2.battle[4], "damage to", 
+            poke.values$poke.1.name, "with the attack", poke.values$poke.2.battle[6])
+   })
 #___________________________________________________________________________________________________________________   
    
    # Outputs the value of the first pokemon chosen 
@@ -330,7 +412,7 @@ server <- function(input, output, clientData, session) {
    output$first.poke <- renderUI({
       selectInput("first.poke",
                   label = NULL,
-                  choices = c(Choose = "", poke.values$pokemon.data[,2]),
+                  choices = c(Choose = "", poke.values$pokemon.data[ ,2]),
                   selected = NULL)
    })
    
@@ -415,6 +497,11 @@ server <- function(input, output, clientData, session) {
                    step = 1)
    })
    
+   output$ex3 <- renderUI({
+      withMathJax(
+         helpText('The busy Cauchy distribution
+                  $$Damage:= (\frac{(\frac{(2\times Level)}{5}+2)\times Power \times A/D}{50}+2)\times Modifier$$'))
+   })
    
    # Assigns a reactive renderTable() function to produce a table displaying the statistics of the pokemon chosen
    output$one.table <- renderTable(bordered = TRUE, {
@@ -451,6 +538,35 @@ server <- function(input, output, clientData, session) {
    })
    })
    
+#_____________________________________________________________________________________________________________________________   
+   
+   RenamePokemonData <- function() {
+      return.data <- LoadPokemon() 
+      colnames(return.data) <- c("id", "name", "type_1", "type_2", "attack", "defense", "hp", "special_attack", "special_defense", "speed")
+      return(return.data)
+   }
+   
+   image.vector <- function() {
+      poke.data <- RenamePokemonData()
+      empty.vector <- c()
+      for(i in poke.data$id) {
+         link <- paste0("img/", i, ".png")
+         empty.vector <- append(empty.vector, paste0('<img src=', link,'></img>'))
+      }
+      
+      return(empty.vector)
+   }
+   
+   images <- data.frame(
+      name = RenamePokemonData(),
+      images = image.vector()
+   )
+   
+   output$image.table <- DT::renderDataTable({
+      DT::datatable(images, colnames = c("ID", "Name", "Type 1", "Type 2", "Attack", "Defense", "HP", "Special Attack", "Special Defense", "Speed", "Image"), escape = FALSE, rownames = FALSE)
+   })
+   
+
 #__________________________________________________________________________________________________________________________________   
    # Takes in the input of each pokemon, and updates the stat labels to match for both pokemon chose
    observe({
@@ -496,7 +612,7 @@ server <- function(input, output, clientData, session) {
       
       updateNumericInput(session, "hp.two", value = (stat.2.observe[1,7] + level.2.observe * 2.5))
       
-      
+    
    })
 }
 
