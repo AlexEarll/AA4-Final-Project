@@ -655,12 +655,4 @@ server <- function(input, output, clientData, session) {
     })
     
   })
-<<<<<<< HEAD
-<<<<<<< HEAD
   }
-=======
-  }
->>>>>>> master
-=======
-  }
->>>>>>> 8c674cba664b3065aae79720d5115953a2efa5f2
