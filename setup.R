@@ -44,6 +44,7 @@ x
 poke.moves <- select(poke.moves, move.name)
 
 poke.moves <- arrange(poke.moves, -move.rank)
+<<<<<<< HEAD
 
 getMoves <- function(get.name) {
    pokemon.url <- paste(base.url,"pokemon/", get.name, "/", sep = "")
@@ -304,6 +305,8 @@ LoadDamageTable <- function() {
    }
    return(damage.table)
 }
+=======
+>>>>>>> 8c674cba664b3065aae79720d5115953a2efa5f2
 
 getMoves <- function(get.name) {
    pokemon.url <- paste(base.url,"pokemon/", get.name, "/", sep = "")
