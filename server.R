@@ -5,6 +5,7 @@ library("ggplot2")
 library("httr")
 library("jsonlite")
 library("DT")
+#library("Cairo")
 
 
 
@@ -72,6 +73,7 @@ server <- function(input, output, clientData, session) {
     }
   }
   
+  # creates data frame of pokemon variables, runs the attack sequence and calculates damage
   Poke.Attack <- function(poke.1.name, poke.1.attack, poke.1.level, attack.num, poke.1.moves, poke.2.defense, poke.2.hp, poke.2.type.1, poke.2.type.2, damage.table) {
     if(sample(1:100,1) > poke.1.moves[attack.num, 4]) {
       return(0)
@@ -146,6 +148,7 @@ server <- function(input, output, clientData, session) {
     return(first.gen)
   }
   
+  # Creates data table that loads in damage
   LoadDamageTable <- function() {
     
     type.names <- c("normal", "fighting", "flying", "poison", "ground", "rock", "bug", 
@@ -202,6 +205,7 @@ server <- function(input, output, clientData, session) {
     return(damage.table)
   }
   
+  # requests all the moves for a given pokemon
   getMoves <- function(get.name) {
     print("trying to get url")
     pokemon.url <- paste(base.url,"pokemon/", get.name, "/", sep = "")
@@ -254,6 +258,8 @@ server <- function(input, output, clientData, session) {
     return(moves)
   }
   
+  # loads the images
+  # NOTE: THE SERVER FOR GITHUB POKEMON API STOPPED WORKING BEFORE CLASS. WE SLIGHTLY ADJUSTED CODE TO ACCOUNT FOR THIS
   LoadAllImages <- function() {
     poke.nums <- c(1:151)
     var <- file.exists("www/img/151.png")
@@ -269,6 +275,7 @@ server <- function(input, output, clientData, session) {
   LoadAllImages()
   #_________________________________________________________________________________________________________________
   
+  # Creates reactive variables
   poke.values <- reactiveValues(pokemon.data = LoadPokemon(),
                                 damage.table = LoadDamageTable(),
                                 poke.1.name = "bulbasaur",
@@ -287,6 +294,7 @@ server <- function(input, output, clientData, session) {
                                 battle.table.2 = data.frame(),
                                 poke.turn = 0)
   
+  # Names observable events to execute
   observeEvent(input$level.one, {
     poke.values$poke.1.level <- input$level.one
   })
@@ -336,6 +344,7 @@ server <- function(input, output, clientData, session) {
   
   #___________________________________________________________________________________________________________________  
   
+  # outputs objects from the UI
   output$x.choice <- renderUI({
     selectInput("x.choice",
                 label = "X Axis Variable Choice",
@@ -400,13 +409,7 @@ server <- function(input, output, clientData, session) {
     }
   })
   
-  
-  
-  
-  
-  
-  
-  
+  # Creates the data tables from the UI
   output$battle.table.1 <- renderTable({
     (poke.values$battle.table.1)
   }) 
@@ -428,6 +431,7 @@ server <- function(input, output, clientData, session) {
     }
   })
   
+  # Outputs the battle results
   output$battle.2.text <- renderText({
     if (poke.values$poke.2.name != "") {
       if(poke.values$poke.2.stats[1,7] <= 0) {
@@ -542,6 +546,7 @@ server <- function(input, output, clientData, session) {
   
   #______________________________________________________________________________________________________________________________   
   
+  # gives option to observe pokemon
   observeEvent(input$first.poke, {
     output$move.choice.one <- renderUI({
       if (poke.values$poke.1.name != "") {
@@ -564,6 +569,7 @@ server <- function(input, output, clientData, session) {
   
   #_____________________________________________________________________________________________________________________________   
   
+  # creates reactive variables
   pokemon <- reactive({
     poke.values$pokemon.data %>%
       group_by(type_1) %>% 
@@ -655,12 +661,4 @@ server <- function(input, output, clientData, session) {
     })
     
   })
-<<<<<<< HEAD
-<<<<<<< HEAD
   }
-=======
-  }
->>>>>>> master
-=======
-  }
->>>>>>> 8c674cba664b3065aae79720d5115953a2efa5f2
